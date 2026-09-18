@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-xP32GqE/sYJVTy7QkF2QwncxWB3mzmkHeICzCGazZ/A=' 'sha256-9i2hPGdQy58Z0S+A8Ml9bYfek54Pn+e60TN96SyL310='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><title>Acefast Order Picker</title></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-xP32GqE/sYJVTy7QkF2QwncxWB3mzmkHeICzCGazZ/A=' 'sha256-dIUGlQLwiaPFs9D+PUQ1o1zSkHWPQMDzkczcrsZZqNE='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><title>Acefast Order Picker</title></head><body>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
 <style>
 :root{--bg:#fafafa;--surface:#ffffff;--ink:#09090b;--muted:#71717a;--line:#e4e4e7;--soft:#f4f4f5;--primary:#18181b;--primary-ink:#fafafa;--accent:#15803d;--accent-soft:#dcfce7;--accent-ink:#ffffff;--ring:rgba(21,128,61,.35);--glass:rgba(255,255,255,.8);--imgbg:#ffffff;--shadow:0 1px 2px rgba(9,9,11,.05);--shadow-lg:0 10px 30px -10px rgba(9,9,11,.18)}
@@ -93,6 +93,7 @@ main{padding-block:20px;min-width:0}
 .line img{width:44px;height:44px;object-fit:contain;background:var(--imgbg);border-radius:8px;border:1px solid var(--line)}
 .line .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--muted)}
 .line .r b{display:block;color:var(--ink);font-weight:500}
+.totals{display:grid;grid-template-columns:1fr auto;gap:4px 24px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);font-variant-numeric:tabular-nums;font-size:13.5px;flex:none}.totals span{color:var(--muted)}.totals b{text-align:right;font-weight:500}.totals .grand{font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--ink);padding-top:6px;border-top:1px solid var(--line)}.totals .grand+b{font-size:20px;font-weight:600;letter-spacing:-.02em;padding-top:6px;border-top:1px solid var(--line)}
 .opts{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
 .opts input{accent-color:var(--primary)}
 textarea{width:100%;min-height:150px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--soft);color:var(--ink);font:12.5px/1.5 ui-monospace,"Geist Mono",Menlo,Consolas,monospace;resize:vertical}
@@ -134,6 +135,7 @@ textarea{width:100%;min-height:150px;border:1px solid var(--line);border-radius:
 <div class="foot"><div class="in"><div class="tot"><b id="tot">$0.00</b><small id="cnt">Nothing picked yet</small></div><button class="btn" id="open" disabled>Review &amp; copy order</button></div></div>
 <div class="sheet" id="sheet" hidden><div class="panel" role="dialog" aria-label="Your order">
 <h3>Your order</h3><div class="lines" id="lines"></div>
+<div class="totals" id="totals"></div>
 <div class="opts"><label><input type="checkbox" id="oEan" checked> Include EAN</label><label><input type="checkbox" id="oPrice" checked> Include prices</label></div>
 <div class="cosum"><div><b id="coSumName"></b><span id="coSumLine"></span></div><button class="link" id="coEdit">Edit</button></div>
 <div class="meta"><label>PO number<input id="mPo"></label><label>Supplier<input id="mSup" value="Acefast"></label><label class="wide">Note to supplier (optional)<input id="mNote" placeholder="e.g. please ship with next consignment"></label></div>
@@ -599,7 +601,8 @@ function orderText(){
   const rows=L.map((l,i)=>`${i+1}. ${l.p.name} - ${l.v.color}${ean?' - EAN '+l.v.ean:''} - QTY ${l.n}${pr?' @ '+money(l.v.price)+' = '+money(l.n*l.v.price):''}`);
   return `Hi,\n\nPlease find my ${$('#mSup').value.trim()?$('#mSup').value.trim()+' ':''}order below${$('#mPo').value.trim()?' (PO '+$('#mPo').value.trim()+')':''}:\n\n${rows.join('\n')}\n\nTotal: ${L.length} lines, ${u} units${pr?'\nSubtotal ex GST: '+money(t)+'\nTotal inc GST: '+money(t*1.1):''}\n\nThanks,\n${[CO.contact,CO.trade||CO.name,CO.phone,CO.email].filter(Boolean).join('\n')}`;
 }
-function sheet(){const{L}=totals();
+function sheet(){const{L,u,t}=totals();
+  $('#totals').innerHTML=`<span>${L.length} line${L.length!==1?'s':''} · ${u} units</span><b></b><span>Subtotal ex GST</span><b>${money(t)}</b><span>GST 10%</span><b>${money(t*0.1)}</b><span class="grand">Total inc GST</span><b>${money(t*1.1)}</b>`;
   $('#lines').innerHTML=L.map(l=>`<div class="line"><img src="${l.p.img||l.p.pkg}" alt=""><div><b>${esc(l.p.code)}</b> ${esc(l.p.name.slice(l.p.code.length).trim())}<br><span style="color:var(--muted);text-transform:capitalize">${esc(l.v.color)}</span></div><div class="r"><b>${l.n} × ${money(l.v.price)}</b>${money(l.n*l.v.price)}</div></div>`).join('');
   $('#txt').value=orderText();$('#sheet').hidden=false}
 function syncBoxes(){document.querySelectorAll('aside input[data-g]').forEach(x=>{x.checked=F[x.dataset.g].has(x.dataset.k)});$('#fPicked').checked=F.picked}
